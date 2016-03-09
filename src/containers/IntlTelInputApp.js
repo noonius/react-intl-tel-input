@@ -8,9 +8,9 @@ import FlagDropDown from '../components/FlagDropDown';
 import TelInput from '../components/TelInput';
 import utils from '../components/utils';
 import * as intlTelInputActions from '../actions/intlTelInputActions';
-import Ajax from 'simple-ajax';
 import _ from 'underscore.deferred';
 import Cookies from 'cookies-js';
+import 'whatwg-fetch';
 
 class IntlTelInputApp extends Component {
   static defaultProps = {
@@ -614,24 +614,21 @@ class IntlTelInputApp extends Component {
   }
 
   loadUtils() {
-    const ajax = new Ajax({
-      url: this.props.utilsScript,
-    }).on('success', (event) => {
-      const data = event.target.responseText;
-
-      if (data) {
-        if (window.execScript) {
-          window.execScript(data);
-        } else {
-          /* eslint-disable */
-          window.eval(data);
-          /* eslint-enable */
+    fetch(this.props.utilsScript)
+      .then((response) => response.text())
+      .then((body) => {
+        if (body) {
+          if (window.execScript) {
+            window.execScript(body);
+          } else {
+            /* eslint-disable */
+            window.eval(body);
+            /* eslint-enable */
+          }
         }
-      }
 
-      this.utilsScriptDeferred.resolve();
-    });
-    ajax.send();
+        this.utilsScriptDeferred.resolve();
+      });
   }
 
   // prepare all of the country data, including onlyCountries and preferredCountries options
